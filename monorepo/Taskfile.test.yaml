@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+    test:
+        desc: "Run Python Tests with Pytest [supports: DIR]"
+        cmds:
+            - |
+                uv run --package {{.PACKAGE_NAME}} \
+                  pytest \
+                  {{.DIR | default .USER_WORKING_DIR}} \
+                  {{.CLI_ARGS | default "-v"}}
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR | default .USER_WORKING_DIR}}" && uv run --only-dev hatch project metadata name
+    cov:
+        desc: "Run Python Tests with Pytest and Coverage [supports: DIR]"
+        cmds:
+            - |
+                uv run --package {{.PACKAGE_NAME}} \
+                  coverage run \
+                  --source {{.DIR | default .USER_WORKING_DIR}} \
+                  --omit "*/tests/*" \
+                  -m pytest \
+                  {{.DIR | default .USER_WORKING_DIR}} \
+                  {{.CLI_ARGS | default "-v"}}
+            - cmd: uv run --only-dev coverage combine
+              silent: true
+            - cmd: uv run --only-dev coverage report
+              silent: true
+            - cmd: uv run --only-dev coverage xml
+              silent: true
+            - cmd: uv run --only-dev coverage html
+              silent: true
+            - cmd: uv run --only-dev coverage erase
+              silent: true
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR | default .USER_WORKING_DIR}}" && uv run --only-dev hatch project metadata name

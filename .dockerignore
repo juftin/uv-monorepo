@@ -1,0 +1,14 @@
+**/.idea
+**/.venv
+**/dist
+**/.ruff_cache
+**/.DS_Store
+.git/
+**/__pycache__
+**/htmlcov/
+**/.coverage/
+*.egg-info/
+*.egg/
+**/coverage.xml
+**/.mypy_cache
+**/.pytest_cache

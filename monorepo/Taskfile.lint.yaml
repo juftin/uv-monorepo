@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+    format:
+        desc: "Format Python Code with Ruff [supports: DIR]"
+        cmd: uv run --only-dev ruff format {{.DIR | default .USER_WORKING_DIR}} {{.CLI_ARGS}}
+    check:
+        desc: "Lint Python Code with Ruff [supports: DIR]"
+        cmd: uv run --only-dev ruff check {{.DIR | default .USER_WORKING_DIR}} {{.CLI_ARGS}}
+    fix:
+        desc: "Format, Fix, and Lint Python Code with Ruff [supports: DIR]"
+        cmd: uv run --only-dev ruff check --fix {{.DIR | default .USER_WORKING_DIR}} {{.CLI_ARGS}}
+        deps:
+            - format
+    typing:
+        desc: "Run Static Type Checking with Mypy [supports: DIR]"
+        cmd: |
+            uv run --package {{.PACKAGE_NAME}} \
+                mypy \
+                --install-types \
+                --non-interactive \
+                {{.DIR | default .USER_WORKING_DIR}} \
+                {{.CLI_ARGS}}
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR | default .USER_WORKING_DIR}}" && uv run --only-dev hatch project metadata name
+    all:
+        desc: "Format, Fix, Lint, and Type Check Python Code [supports: DIR]"
+        cmds:
+            - task: fix
+            - task: typing

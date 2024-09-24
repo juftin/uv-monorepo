@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+    release:
+        desc: "Release Project with Semantic Release [requires: DIR]"
+        cmd: npm --prefix "{{.USER_WORKING_DIR}}/monorepo/semantic-release" exec semantic-release
+        dir: "{{.DIR}}"
+        requires:
+            vars:
+                - DIR
+        env:
+            PACKAGE_NAME:
+                sh: uv run --only-dev hatch project metadata name
+    version:
+        desc: "Print Project Version [requires: DIR]"
+        dir: "{{.DIR}}"
+        cmd: uv run --only-dev hatch project metadata version
+        silent: true
+        requires:
+            vars:
+                - DIR

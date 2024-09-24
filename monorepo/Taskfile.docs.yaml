@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+    build:
+        desc: Build Documentation with MkDocs
+        cmd: |
+            uv run --only-dev mkdocs build \
+              --config-file {{.TASKFILE_DIR}}/mkdocs.yaml \
+              --site-dir {{.USER_WORKING_DIR}}/site
+    serve:
+        desc: Serve Documentation with MkDocs
+        cmd: |
+            uv run --only-dev mkdocs serve \
+              --config-file {{.TASKFILE_DIR}}/mkdocs.yaml \
+              --dev-addr 0.0.0.0:8000

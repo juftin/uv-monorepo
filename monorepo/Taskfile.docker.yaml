@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+    base:
+        desc: Build Monorepo Base Monolith Docker image
+        internal: true
+        cmds:
+            - |
+                docker build \
+                    --tag {{.DOCKER_REPO_NAME}}/{{.MONOREPO_DOCKER_IMAGE_NAME}}:{{.MONOREPO_DOCKER_IMAGE_TAG}} \
+                    --build-arg PYTHON_VERSION={{.PYTHON_VERSION}} \
+                    --file "{{.TASKFILE_DIR}}/Dockerfile" \
+                    "{{.USER_WORKING_DIR}}"
+        requires:
+            vars:
+                - DOCKER_REPO_NAME
+                - MONOREPO_DOCKER_IMAGE_NAME
+                - MONOREPO_DOCKER_IMAGE_TAG
+                - PYTHON_VERSION
+    build:
+        desc: "Build Project Docker image [requires: DIR]"
+        cmd: |
+            docker build \
+              --tag {{.DOCKER_REPO_NAME}}/{{.PACKAGE_NAME}}:latest \
+              --tag {{.DOCKER_REPO_NAME}}/{{.PACKAGE_NAME}}:{{.PACKAGE_VERSION}} \
+              --build-arg PYTHON_VERSION={{.PYTHON_VERSION}} \
+              --build-arg DOCKER_REPO_NAME={{.DOCKER_REPO_NAME}} \
+              --build-arg MONOREPO_DOCKER_IMAGE_NAME={{.MONOREPO_DOCKER_IMAGE_NAME}} \
+              --build-arg MONOREPO_DOCKER_IMAGE_TAG={{.MONOREPO_DOCKER_IMAGE_TAG}} \
+              --build-arg PACKAGE_NAME={{.PACKAGE_NAME}} \
+              "{{.DIR}}"
+        deps:
+            - base
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata name
+            PACKAGE_VERSION:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata version
+        requires:
+            vars:
+                - DIR
+                - DOCKER_REPO_NAME
+                - MONOREPO_DOCKER_IMAGE_NAME
+                - MONOREPO_DOCKER_IMAGE_TAG
+                - PYTHON_VERSION
+    run:
+        deps:
+            - build
+        desc: "Interactively Run Project Docker image [requires: DIR]"
+        cmd: |
+            docker run --rm -it \
+                --publish 8000:8000 \
+                {{.DOCKER_REPO_NAME}}/{{.PACKAGE_NAME}}:{{.PACKAGE_VERSION}} \
+                {{.CLI_ARGS}}
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata name
+            PACKAGE_VERSION:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata version
+        interactive: true
+        requires:
+            vars:
+                - DIR
+                - DOCKER_REPO_NAME
+                - MONOREPO_DOCKER_IMAGE_NAME
+                - MONOREPO_DOCKER_IMAGE_TAG
+                - PYTHON_VERSION
+    publish:
+        desc: "Build and Publish Project Docker image [requires: DIR]"
+        cmds:
+            - cmd: echo docker push {{.DOCKER_REPO_NAME}}/{{.PACKAGE_NAME}}:latest
+              silent: true
+            - cmd: echo docker push {{.DOCKER_REPO_NAME}}/{{.PACKAGE_NAME}}:{{.PACKAGE_VERSION}}
+              silent: true
+        deps:
+            - build
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata name
+            PACKAGE_VERSION:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata version
+        requires:
+            vars:
+                - DIR
+                - DOCKER_REPO_NAME
+                - MONOREPO_DOCKER_IMAGE_NAME
+                - MONOREPO_DOCKER_IMAGE_TAG
+                - PYTHON_VERSION

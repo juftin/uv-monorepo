@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+    build:
+        desc: "Build a Python Package [requires: DIR]"
+        cmd: uv build --package {{.PACKAGE_NAME}} --out-dir "{{.USER_WORKING_DIR}}/dist"
+        requires:
+            vars:
+                - DIR
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR}}" && uv run --only-dev hatch project metadata name
+    publish:
+        desc: "Build and Publish Python Package [requires: DIR]"
+        cmds:
+            - rm -r {{.USER_WORKING_DIR}}/dist/*
+            - task: build
+            - uv run --only-dev twine check dist/*
+            - echo uv run --only-dev twine upload dist/*
+        requires:
+            vars:
+                - DIR

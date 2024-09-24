@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+# TODO: Act on each version change in the matrix
+
+name: UV Release
+on:
+    push:
+        branches: [main]
+concurrency:
+    group: ${{ github.workflow }}
+env:
+    PYTHON_VERSION: "3.12"
+jobs:
+    changed-files:
+        name: changed-versions
+        runs-on: ubuntu-latest
+        outputs:
+            directories: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+            changed: ${{ steps.changed-files.outputs.any_modified }}
+        steps:
+            - name: Check out the current code
+              uses: actions/checkout@v4
+              with:
+                  path: new
+            - name: Check out the before code
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.before }}
+                  path: old
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+            - name: Install uv
+              uses: astral-sh/setup-uv@v2
+            - name: Get Old Versions
+              id: old
+              working-directory: old
+              run: |
+                  VERSIONS="$(uv run monorepo/uv_release.py versions)"
+                  echo "${VERSIONS}"
+                  echo "VERSIONS=${VERSIONS}" >> "${GITHUB_OUTPUT}"
+            - name: Get New Versions
+              id: new
+              working-directory: new
+              run: |
+                  VERSIONS="$(uv run monorepo/uv_release.py versions)"
+                  echo "${VERSIONS}"
+                  echo "VERSIONS=${VERSIONS}" >> "${GITHUB_OUTPUT}"
+            - name: Get Version Diff
+              id: diff
+              working-directory: new
+              run: |
+                  VERSION_DIFF="$(uv run monorepo/uv_release.py diff \
+                    --old '${{ steps.old.outputs.VERSIONS }}' \
+                    --new '${{ steps.new.outputs.VERSIONS }}' \
+                  )"
+                  echo "${VERSION_DIFF}" | jq
+                  echo "versions=${VERSION_DIFF}" >> "${GITHUB_OUTPUT}"
