@@ -1,0 +1,40 @@
+{
+    "name": "service-b",
+    "release": {
+        "plugins": [
+            "@semantic-release/commit-analyzer",
+            "@semantic-release/release-notes-generator",
+            [
+                "@semantic-release/exec",
+                {
+                    "prepareCmd": "uv run --only-dev hatch version ${nextRelease.version} && uv build"
+                }
+            ],
+            [
+                "@semantic-release/github",
+                {
+                    "assets": [
+                        {
+                            "path": "dist/*.whl"
+                        },
+                        {
+                            "path": "dist/*.tar.gz"
+                        }
+                    ]
+                }
+            ],
+            [
+                "@semantic-release/git",
+                {
+                    "assets": [
+                        "*/__init__.py"
+                    ],
+                    "message": "chore(release): ${process.env.PACKAGE_NAME} ${nextRelease.version}\n\n${nextRelease.notes}\n[skip ci]"
+                }
+            ]
+        ],
+        "extends": [
+            "semantic-release-monorepo"
+        ]
+    }
+}
