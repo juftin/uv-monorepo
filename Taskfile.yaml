@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+vars:
+    PYTHON_VERSION: 3.12
+    DOCKER_REPO_NAME: uv-monorepo
+    MONOREPO_DOCKER_IMAGE_NAME: uv-monorepo
+    MONOREPO_DOCKER_IMAGE_TAG: latest
+
+tasks:
+    ######################################################################
+    # Project
+    ######################################################################
+    install:
+        desc: Install Project Development Dependencies
+        cmds:
+            - uv sync --python {{.PYTHON_EXE}} --package {{.PACKAGE_NAME}} {{.CLI_ARGS}}
+            - cmd: |
+                  if [ "{{.PRE_COMMIT | default 1}}" = "1" ]; then
+                      uv tool run pre-commit install --install-hooks
+                  fi
+              silent: true
+        vars:
+            PYTHON_EXE:
+                sh: which python{{.PYTHON_VERSION}}
+            PACKAGE_NAME:
+                sh: cd "{{.DIR | default .USER_WORKING_DIR}}" && uv run --only-dev hatch project metadata name
+    ######################################################################
+    # INTERNAL TASKS
+    ######################################################################
+    default:
+        desc: List all tasks and their descriptions
+        cmd: task --list-all
+
+includes:
+    # Sub-Taskfiles
+    lint: monorepo/Taskfile.lint.yaml
+    docker: monorepo/Taskfile.docker.yaml
+    python: monorepo/Taskfile.python.yaml
+    docs: monorepo/Taskfile.docs.yaml
+    test: monorepo/Taskfile.test.yaml
+    tools: monorepo/Taskfile.tools.yaml

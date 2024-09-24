@@ -1,0 +1,101 @@
+[project]
+dependencies = [
+  "package-a",
+  "package-b",
+  "service-a",
+  "service-b"
+]
+description = "an example monorepo implemented with uv"
+name = "uv-monorepo"
+readme = "README.md"
+requires-python = ">=3.11,<4"
+version = "0.1.0"
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:"
+]
+show_missing = true
+
+[tool.coverage.run]
+branch = true
+disable_warnings = [
+  "module-not-measured",
+  "module-not-imported"
+]
+parallel = true
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.ruff]
+indent-width = 4
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.format]
+docstring-code-format = false
+indent-style = "space"
+quote-style = "double"
+
+[tool.ruff.lint]
+select = [
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "F",  # pyflakes
+  "I",  # isort
+  "PLE",  # pylint
+  "PLR",  # pylint
+  "PLW",  # pylint
+  "RUF",  # ruff
+  "C90"  # mccabe
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+  "package_a",
+  "package_b",
+  "service_a",
+  "service_b"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["PLR2004", "S101", "TID252", "ARG001"]
+
+[tool.uv]
+dev-dependencies = [
+  # Code Linting + Formatting
+  "ruff>=0.6.5",
+  # Testing
+  "pytest>=8.3.3",
+  # Test Coverage
+  "coverage>=7.6.1",
+  # FastAPI TestClient
+  "httpx>=0.27.2",
+  # Static Type Checking
+  "mypy>=1.11.2",
+  # Package Management (mypy --install-types)
+  "pip>=24.2",
+  # Python Artifact Publishing
+  "twine>=5.1.1",
+  # Python Package Management (for metadata)
+  "hatch>=1.12.0",
+  # Documentation
+  "mkdocs>=1.6.1",
+  "mkdocs-material>=9.5.35",
+  "mkdocs-gen-files>=0.5.0",
+  "markdown-exec>=1.9.3",
+  "markdown-callouts>=0.4.0"
+]
+package = false
+
+[tool.uv.sources]
+package-a = {workspace = true}
+package-b = {workspace = true}
+service-a = {workspace = true}
+service-b = {workspace = true}
+
+[tool.uv.workspace]
+members = ["src/packages/*", "src/services/*"]
