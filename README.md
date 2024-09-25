@@ -53,6 +53,7 @@ task: Available tasks for this project:
 * lint:typing:          Run Static Type Checking with Mypy [supports: DIR]
 * python:build:         Build a Python Package [requires: DIR]
 * python:publish:       Build and Publish Python Package [requires: DIR]
+* python:repl:          Run a Python REPL [requires: DIR]
 * test:cov:             Run Python Tests with Pytest and Coverage [supports: DIR]
 * test:test:            Run Python Tests with Pytest [supports: DIR]
 * tools:release:        Release Project with Semantic Release [requires: DIR]

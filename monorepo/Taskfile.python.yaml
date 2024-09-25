@@ -22,3 +22,12 @@ tasks:
         requires:
             vars:
                 - DIR
+    repl:
+        desc: "Run a Python REPL [supports: DIR]"
+        cmds:
+            - uv sync --package {{.PACKAGE_NAME}}
+            - uv run --with ipython --package {{.PACKAGE_NAME}} ipython
+        interactive: true
+        vars:
+            PACKAGE_NAME:
+                sh: cd "{{.DIR | default .USER_WORKING_DIR}}" && uv run --only-dev hatch project metadata name
